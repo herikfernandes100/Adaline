@@ -3,7 +3,7 @@
 
 MAX_EPOCAS = 1000
 TAXA_APRENDIZADO = 0.0025
-TOLERANCIA = 0.000001
+PRECISAO = 0.000001
 
 import random
 import json
@@ -14,7 +14,7 @@ class Adaline:
 
     def __init__(self):
         self.taxa_aprendizado = TAXA_APRENDIZADO
-        self.pesos = [random.uniform(-1, 1) for _ in range(5)]
+        self.pesos = [random.uniform(0, 1) for _ in range(5)]  # w0 + 4 entradas
 
     def calcular_u(self, entradas):
         x = [-1] + entradas
@@ -40,36 +40,32 @@ class Adaline:
         erro_anterior = float('inf')
 
         while epoca < MAX_EPOCAS:
-            erro_total = 0
+            erro_total = 0.0
 
             for entradas, saida_esperada in dados:
-                
                 u = self.calcular_u(entradas)
-
                 erro = saida_esperada - u
-                erro_total += (erro ** 2)
-
                 self.atualizar_pesos(erro, entradas)
+                erro_total += erro ** 2
 
-            erro_total /= len(dados)
-            historico.append(erro_total)
+            erro_medio_quadratico = erro_total / len(dados)
+            historico.append(erro_medio_quadratico)
             epoca += 1
 
-            if abs(erro_total - erro_anterior) < TOLERANCIA:
+            if abs(erro_anterior - erro_medio_quadratico) < PRECISAO:
                 break
 
-            erro_anterior = erro_total
+            erro_anterior = erro_medio_quadratico
 
         return historico, epoca
 
+
     def plotar_grafico(self, historico, epocas):
-        
-        plt.figure(figsize=(8,5))
-        plt.plot(range(1, epocas+1), historico, marker='o')
-        plt.title("Evolução do Erro por Época")
-        plt.xlabel("Épocas")
-        plt.ylabel("Erro Total")
-        plt.grid(True)
+        plt.plot(range(1, epocas + 1), historico, marker='o')
+        plt.title('Erro Médio Quadrático por Época')
+        plt.xlabel('Épocas')
+        plt.ylabel('Erro Médio Quadrático')
+        plt.grid()
         plt.show()
 
     def prever(self, entradas):
